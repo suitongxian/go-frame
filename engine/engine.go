@@ -2,13 +2,15 @@ package engine
 
 import (
 	"net/http"
+	"strings"
 )
 
-type HandlerFunc func(w http.ResponseWriter, req *http.Request)
+type HandlerFunc func(ctx *Context)
 
 type Engine struct {
 	*GroupRouter
 	Router *Router
+	groups []*GroupRouter
 }
 
 func New() *Engine {
@@ -18,7 +20,14 @@ func New() *Engine {
 }
 
 func (e *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	var middlewares = make([]HandlerFunc, 0, len(e.Middlewares))
+	for i := 0;i < len(e.groups);i++ {
+		if strings.HasPrefix(req.URL.Path, e.groups[i].Prefix) {
+			middlewares = append(middlewares, e.groups[i].Middlewares...)
+		}
+	}
 	ctx := NewContext(w, req)
+	ctx.Handlers = middlewares
 	e.Router.handle(ctx)
 }
 

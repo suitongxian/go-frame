@@ -8,12 +8,15 @@ import (
 
 func main() {
 	e := engine.New()
-	group1 := e.Group("/prefix")
-	group1.Get("/get", func(w http.ResponseWriter, req *http.Request) {
-		fmt.Println("111")
+	e.Get("/get", func(ctx *engine.Context) {
+		ctx.String(http.StatusOK, "this is get")
 	})
-	e.Post("/post", func(w http.ResponseWriter, req *http.Request) {
-		fmt.Println("222")
+	group1 := e.Group("/prefix")
+	group1.Get("/get", func(ctx *engine.Context) {
+		ctx.String(http.StatusOK, "this is prefix/get")
+	})
+	e.Post("/post", func(ctx *engine.Context) {
+		fmt.Println("this is prefix/post")
 	})
 	e.Run("127.0.0.1:8080")
 }
